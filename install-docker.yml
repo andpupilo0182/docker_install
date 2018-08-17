@@ -13,7 +13,7 @@
         - python-pip 
     when:
         - ansible_distribution == "CentOS"
-    tag: depends
+    tags: depends
     register: depends_centos
 
   - name: Instalando dependencias Debian
@@ -30,7 +30,7 @@
         - apt-transport-https
     when:
       - ansible_distribution == "Debian"
-    tag: depends
+    tags: depends
     register: depends_debian
 
   - name: Instalando Repositorio Docker Debian
