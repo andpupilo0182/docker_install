@@ -1,0 +1,55 @@
+---
+- hosts: dockers
+  tasks:
+  - name: Instalando dependencias CentOS
+    yum:
+      name: "{{ item }}"
+      state: present
+    with_items:
+        - yum-utils 
+        - device-mapper-persistent-data
+        - lvm2
+        - vim
+        - python-pip 
+    when:
+        - ansible_distribution == "CentOS"
+    tag: depends
+    register: depends_centos
+
+  - name: Instalando dependencias Debian
+    apt:
+      name: "{{ item }}"
+      state: present
+      update_cache: yes
+    with_items:
+        - python-pip
+        - curl
+        - gnupg2
+        - software-properties-common
+        - ca-certificates
+        - apt-transport-https
+    when:
+      - ansible_distribution == "Debian"
+    tag: depends
+    register: depends_debian
+
+  - name: Instalando Repositorio Docker Debian
+    shell: curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add - ; add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable" ; apt-get update ; pip install docker-py
+    when:
+      - ansible_distribution == "Debian"
+
+  - name: Instalando Repositorio Docker Centos
+    shell: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo ; pip install docker-py
+    when:
+      - ansible_distribution == "CentOS"
+
+  - name: Instalando Docker CE
+    package:
+      name: docker-ce
+      state: present
+
+  - name: Inciando o servico Docker
+    service:
+      name: docker
+      state: started
+      enabled: yes
